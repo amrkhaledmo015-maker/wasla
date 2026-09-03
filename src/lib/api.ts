@@ -97,6 +97,9 @@ export const api = {
     return db.bookings.filter((b) => b.passengerId === passenger.id);
   },
 
+  getDrivers: async () => [...db.drivers],
+  getPayments: async () => [...db.payments],
+
   // WRITE operations
   createBooking: async (
     tripId: string,

@@ -6,7 +6,8 @@ import { useWaslaContext } from "./lib/AppContext";
 import PassengerDashboard from "./pages/PassengerDashboard";
 import SeatSelectionPage from "./pages/SeatSelectionPage";
 import PaymentPage from "./pages/PaymentPage";
-import BookingConfirmationPage from "./pages/BookingConfirmationPage";
+import DriverDashboard from "./pages/DriverDashboard";
+import StationManagerDashboard from "./pages/StationManagerDashboard";
 
 function App() {
   return (
@@ -33,9 +34,9 @@ function MainLayout() {
           </Routes>
         );
       case "driver":
-        return <div className="p-8 text-center">لوحة تحكم السائق (قريباً)</div>; // <DriverDashboard />;
+        return <DriverDashboard />;
       case "station-manager":
-        return <div className="p-8 text-center">لوحة تحكم مدير المحطة (قريباً)</div>; // <StationManagerDashboard />;
+        return <StationManagerDashboard />;
       default:
         return <div className="p-8 text-center">الرجاء اختيار دور للبدء.</div>;
     }

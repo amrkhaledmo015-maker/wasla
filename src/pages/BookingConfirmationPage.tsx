@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import QRCode from 'react-qr-code';
+import QRCode from 'qrcode.react';
 import { useWaslaContext } from '../lib/AppContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Loader2, CheckCircle, Clock, AlertCircle } from 'lucide-react';
