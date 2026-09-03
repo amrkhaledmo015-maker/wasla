@@ -1,5 +1,5 @@
 
-import React, { useState, createContext, useContext, useMemo } from "react";
+import React, { useState, createContext, useContext, useMemo, useEffect } from "react";
 import { User, UserRole, AppState, AppContextType } from "./types";
 import { users } from "../data/seed";
 import { api } from "./api"; // Assuming api is in the same directory
@@ -14,7 +14,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return users.find(u => u.role === currentRole) || null;
   }, [currentRole]);
 
-  const { users: allUsers, vehicles, trips, bookings, payments, drivers, isLoading, refreshData } = useWasla(currentUser);
+  const { users: allUsers, vehicles, trips, bookings, payments, drivers, notifications, isLoading, refreshData } = useWasla(currentUser);
 
   const setRole = (role: UserRole) => {
       setCurrentRole(role);
@@ -35,9 +35,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return result; // Return both booking and payment
   };
 
-  const cancelBooking = async (bookingId: string) => {
-      console.log(`Booking ${bookingId} cancelled`);
-      // Here you would call api.cancelBooking(bookingId)
+  const cancelBooking = async (bookingId: string, reason: string) => {
+      console.log(`Booking ${bookingId} cancelled due to ${reason}`);
+      await api.cancelBooking(bookingId, reason);
       await refreshData();
   };
 
@@ -52,15 +52,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await refreshData();
   };
 
-  const approveDriver = async (driverId: string) => {
-      console.log(`Driver ${driverId} approved`);
-      // Here you would call api.approveDriver(driverId)
+  const approveDriver = async (driverId: string, isApproved: boolean) => {
+      await api.approveDriver(driverId, isApproved);
       await refreshData();
   };
 
   const assignDriverToVehicle = async (driverId: string, vehicleId: string) => {
-      console.log(`Driver ${driverId} assigned to vehicle ${vehicleId}`);
-      // Here you would call api.assignDriverToVehicle(driverId, vehicleId)
+      await api.assignDriverToVehicle(driverId, vehicleId);
       await refreshData();
   };
 
@@ -84,10 +82,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       bookings,
       payments,
       drivers,
+      notifications,
       // Dummy data for now
       stationManagers: [],
       refunds: [],
-      notifications: [],
       setRole,
       selectSeat,
       createBooking,
@@ -117,16 +115,17 @@ function useWasla(currentUser: User | null) {
 
   const refreshData = async () => {
       setState((s) => ({ ...s, isLoading: true }));
-      const [users, vehicles, trips, payments, bookings, drivers] = await Promise.all([
+      const [users, vehicles, trips, payments, bookings, drivers, notifications] = await Promise.all([
           api.getUsers(),
           api.getVehicles(),
           api.getTrips(),
           api.getPayments(),
           currentUser ? api.getBookingsForUser(currentUser.id) : Promise.resolve([]),
           api.getDrivers(),
+          api.getNotifications(),
       ]);
 
-      setState({ users, vehicles, trips, bookings, payments, drivers, isLoading: false });
+      setState({ users, vehicles, trips, bookings, payments, drivers, notifications, isLoading: false });
   };
 
   useEffect(() => {

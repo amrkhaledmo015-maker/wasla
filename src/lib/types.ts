@@ -192,7 +192,7 @@ export interface AppContextType extends AppState {
   // Passenger actions
   selectSeat: (tripId: string, seatNumber: number) => void;
   createBooking: (tripId: string, seatNumber: number) => Promise<Booking>;
-  cancelBooking: (bookingId: string) => void;
+  cancelBooking: (bookingId: string, reason: string) => void;
 
   // Driver actions
   updatePassengerStatus: (
@@ -203,7 +203,7 @@ export interface AppContextType extends AppState {
   departTrip: (tripId: string) => void;
 
   // Station Manager actions
-  approveDriver: (driverId: string) => void;
+  approveDriver: (driverId: string, isApproved: boolean) => void;
   assignDriverToVehicle: (driverId: string, vehicleId: string) => void;
   updateVehicleStatus: (vehicleId: string, status: Vehicle["status"]) => void;
   approvePayment: (paymentId: string) => void;

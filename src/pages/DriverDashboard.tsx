@@ -9,11 +9,37 @@ import { useEffect, useState } from "react";
 import { differenceInSeconds } from "date-fns";
 import { cn } from "../lib/utils";
 
+import { useWaslaContext } from "../lib/AppContext";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
+import { Badge } from "../components/ui/badge";
+import { Bus, Clock, Users, Check, UserCheck, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { differenceInSeconds } from "date-fns";
+import { cn } from "../lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../components/ui/alert-dialog";
+
 const PassengerList = ({ trip }) => {
-    const { updatePassengerStatus } = useWaslaContext();
+    const { updatePassengerStatus, cancelBooking } = useWaslaContext();
 
     const handleStatusUpdate = (bookingId: string, status: "arrived" | "boarded") => {
         updatePassengerStatus(trip.id, bookingId, status);
+    };
+
+    const handleCancel = (bookingId: string) => {
+        // In a real app, you'd provide a reason.
+        cancelBooking(bookingId, "no-show");
     };
 
     const getStatusBadge = (status: string) => {
@@ -42,29 +68,49 @@ const PassengerList = ({ trip }) => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {trip.passengers.map(p => (
+                {[...trip.passengers].sort((a, b) => a.seatNumber - b.seatNumber).map(p => (
                     <TableRow key={p.bookingId}>
                         <TableCell className="font-bold text-lg">{p.seatNumber}</TableCell>
                         <TableCell>{p.name}</TableCell>
                         <TableCell>{getStatusBadge(p.status)}</TableCell>
                         <TableCell className="flex gap-2">
-                            <Button 
-                                size="sm" 
-                                variant="outline" 
-                                disabled={p.status === 'arrived' || p.status === 'boarded'}
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={p.status !== 'reserved'}
                                 onClick={() => handleStatusUpdate(p.bookingId, 'arrived')}
                             >
                                 <Check className="w-4 h-4 ms-1" />
                                 وصل
                             </Button>
-                            <Button 
-                                size="sm" 
+                            <Button
+                                size="sm"
                                 disabled={p.status === 'boarded'}
                                 onClick={() => handleStatusUpdate(p.bookingId, 'boarded')}
                             >
                                 <UserCheck className="w-4 h-4 ms-1" />
                                 صعد
                             </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="destructive" disabled={p.status === 'boarded' || p.status === 'no-show'}>
+                                    <XCircle className="w-4 h-4 ms-1" />
+                                    إلغاء
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>هل أنت متأكد من إلغاء حجز هذا الراكب؟</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    سيتم تحديد هذا الراكب على أنه "لم يحضر"، وسيتم إتاحة مقعده للحجز مرة أخرى. ستبدأ عملية استرداد المبلغ المدفوع.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>تراجع</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleCancel(p.bookingId)}>نعم، قم بالإلغاء</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                         </TableCell>
                     </TableRow>
                 ))}

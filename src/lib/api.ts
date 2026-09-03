@@ -37,6 +37,7 @@ let db = {
   bookings: seedBookings,
   payments: seedPayments,
   routes: seedRoutes,
+  notifications: [],
 };
 
 // --- API Abstraction ---
@@ -97,7 +98,7 @@ export const api = {
     return db.bookings.filter((b) => b.passengerId === passenger.id);
   },
 
-  getDrivers: async () => [...db.drivers],
+  getNotifications: async () => [...db.notifications],
   getPayments: async () => [...db.payments],
 
   // WRITE operations
@@ -207,6 +208,27 @@ export const api = {
         };
         trip.passengers.push(passengerInfo);
         tripToUpdate = trip;
+
+        // Create notifications
+        draft.notifications.push({
+            id: `notif-p-${Date.now()}`,
+            userId: passenger.id,
+            message: `تم تأكيد حجزك ${booking.bookingCode} لرحلة ${trip.vehicleNumber}.`,
+            type: 'success',
+            isRead: false,
+            createdAt: new Date().toISOString(),
+        });
+        const driver = draft.drivers.find(d => d.id === draft.vehicles.find(v => v.id === trip.vehicleId)?.driverId);
+        if (driver) {
+             draft.notifications.push({
+                id: `notif-d-${Date.now()}`,
+                userId: driver.userId,
+                message: `راكب جديد (${passenger.name}) حجز المقعد ${booking.seatNumber} في رحلتك.`,
+                type: 'info',
+                isRead: false,
+                createdAt: new Date().toISOString(),
+            });
+        }
     });
 
     if (bookingToUpdate && tripToUpdate) {
@@ -214,6 +236,90 @@ export const api = {
     }
     return { error: "Could not approve payment." };
   },
+
+  cancelBooking: async (bookingId: string, reason: string): Promise<{ booking: Booking } | { error: string }> => {
+    let cancelledBooking: Booking | undefined;
+    db = produce(db, (draft) => {
+        const booking = draft.bookings.find(b => b.id === bookingId);
+        if (booking) {
+            booking.status = 'cancelled';
+            cancelledBooking = booking;
+
+            // Also update the passenger status on the trip
+            const trip = draft.trips.find(t => t.id === booking.tripId);
+            if (trip) {
+                const passenger = trip.passengers.find(p => p.bookingId === bookingId);
+                if (passenger) {
+                    // In a real system, this might become a more complex state.
+                    // For now, we remove them to free up the seat count.
+                    trip.passengers = trip.passengers.filter(p => p.bookingId !== bookingId);
+                }
+            }
+
+            // Create a refund record
+            const refund: Refund = {
+                id: `refund-${Date.now()}`,
+                bookingId: booking.id,
+                amount: 50, // Assuming fixed price
+                status: 'pending',
+                reason: reason,
+                createdAt: new Date().toISOString(),
+            };
+            // In a real DB, you'd have a refunds table.
+            // For now, we just log it.
+            console.log("Initiated refund:", refund);
+
+            // Create a notification for the passenger
+            const passenger = draft.users.find(u => u.id === booking.passengerId);
+            if (passenger) {
+                draft.notifications.push({
+                    id: `notif-${Date.now()}`,
+                    userId: passenger.id,
+                    message: `تم إلغاء حجزك ${booking.bookingCode} وسيتم استرداد المبلغ. السبب: ${reason}`,
+                    type: 'error',
+                    isRead: false,
+                    createdAt: new Date().toISOString(),
+                });
+            }
+        }
+    });
+
+    if (cancelledBooking) {
+        return { booking: cancelledBooking };
+    }
+    return { error: "Booking not found." };
+  },
+
+  approveDriver: async (driverId: string, isApproved: boolean): Promise<{ driver: Driver } | { error: string }> => {
+    let updatedDriver: Driver | undefined;
+    db = produce(db, (draft) => {
+        const driver = draft.drivers.find(d => d.id === driverId);
+        if (driver) {
+            driver.verificationStatus = isApproved ? 'verified' : 'rejected';
+            updatedDriver = driver;
+        }
+    });
+    if (updatedDriver) return { driver: updatedDriver };
+    return { error: "Driver not found." };
+  },
+
+  assignDriverToVehicle: async (driverId: string, vehicleId: string): Promise<{ vehicle: Vehicle } | { error: string }> => {
+    let updatedVehicle: Vehicle | undefined;
+    db = produce(db, (draft) => {
+        const vehicle = draft.vehicles.find(v => v.id === vehicleId);
+        // Unassign from any other vehicle first
+        const previouslyAssigned = draft.vehicles.find(v => v.driverId === driverId);
+        if (previouslyAssigned) {
+            previouslyAssigned.driverId = null;
+        }
+        if (vehicle) {
+            vehicle.driverId = driverId;
+            updatedVehicle = vehicle;
+        }
+    });
+    if (updatedVehicle) return { vehicle: updatedVehicle };
+    return { error: "Vehicle or driver not found." };
+  }
 
   // Driver actions
   updatePassengerStatus: async (

@@ -110,7 +110,7 @@ const MyBookingCard = ({ booking }: { booking: Booking }) => {
                         {statusText[booking.status]}
                     </Badge>
                 </CardTitle>
-                <CardDescription>{format(new Date(booking.createdAt), 'PPP p', { locale: require('date-fns/locale/ar-SA') })}</CardDescription>
+                <CardDescription>{format(new Date(booking.createdAt), 'PPP p')}</CardDescription>
             </CardHeader>
             <CardContent className="flex justify-between items-center">
                 <div>

@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { AppProvider } from "./lib/AppContext";
 import { RoleSwitcher } from "./components/RoleSwitcher";
+import { Notifications } from "./components/Notifications";
 import { useWaslaContext } from "./lib/AppContext";
 import PassengerDashboard from "./pages/PassengerDashboard";
 import SeatSelectionPage from "./pages/SeatSelectionPage";
@@ -52,7 +53,8 @@ function MainLayout() {
               <h1 className="text-2xl font-bold text-primary hidden sm:block">وصلة | Wasla</h1>
             </Link>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Notifications />
             <RoleSwitcher />
             {/* Auth button will go here */}
           </div>
