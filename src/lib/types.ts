@@ -191,28 +191,20 @@ export interface AppState {
   notifications: Notification[];
 }
 
-export interface AppContextType extends AppState {
+export interface AppContextType extends Partial<AppState> {
+  isAuthenticated: boolean;
   isLoading: boolean;
-
-  // Role switching
+  login: (role: UserRole) => void;
+  logout: () => void;
   setRole: (role: UserRole) => void;
-
-  // Passenger actions
-  selectSeat: (tripId: string, seatNumber: number) => void;
   createBooking: (tripId: string, seatNumber: number) => Promise<{ booking: Booking; payment: Payment }>;
   cancelBooking: (bookingId: string, reason: string) => void;
-
-  // Driver actions
-  updatePassengerStatus: (
-    tripId: string,
-    passengerId: string,
-    status: "arrived" | "boarded"
-  ) => void;
+  updatePassengerStatus: (tripId: string, bookingId: string, status: "arrived" | "boarded") => void;
   departTrip: (tripId: string) => void;
-
-  // Station Manager actions
   approveDriver: (driverId: string, isApproved: boolean) => void;
   assignDriverToVehicle: (driverId: string, vehicleId: string) => void;
   updateVehicleStatus: (vehicleId: string, status: Vehicle["status"]) => void;
   approvePayment: (paymentId: string) => void;
+  currentUser: User | null;
+  currentRole: UserRole;
 }
