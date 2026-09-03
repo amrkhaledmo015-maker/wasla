@@ -112,7 +112,16 @@ export const useWaslaContext = () => {
 
 // Helper hook to avoid re-typing `useWasla` from api.ts
 function useWasla(currentUser: User | null) {
-  const [state, setState] = useState<Partial<AppState> & { isLoading: boolean }>({ isLoading: true });
+  const [state, setState] = useState<Partial<AppState> & { isLoading: boolean }>({
+      users: [],
+      vehicles: [],
+      trips: [],
+      bookings: [],
+      payments: [],
+      drivers: [],
+      notifications: [],
+      isLoading: true,
+  });
 
   const refreshData = async () => {
       setState((s) => ({ ...s, isLoading: true }));
