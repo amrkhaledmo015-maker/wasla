@@ -1,6 +1,6 @@
 
 import React, { useState, createContext, useContext, useMemo, useEffect } from "react";
-import { User, UserRole, AppState, AppContextType } from "./types";
+import { User, UserRole, AppState, AppContextType, Vehicle } from "./types";
 import { users } from "../data/seed";
 import { api } from "./api"; // Assuming api is in the same directory
 
@@ -83,6 +83,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       payments,
       drivers,
       notifications,
+      isLoading,
       // Dummy data for now
       stationManagers: [],
       refunds: [],

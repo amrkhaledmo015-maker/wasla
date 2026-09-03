@@ -1,10 +1,10 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG as QRCode } from 'qrcode.react';
 import { useWaslaContext } from '../lib/AppContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import { Loader2, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle, Clock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function BookingConfirmationPage() {

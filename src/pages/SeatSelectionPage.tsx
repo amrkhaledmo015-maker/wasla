@@ -7,9 +7,9 @@ import { SeatMap } from "../components/SeatMap";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "../components/ui/card";
 import { ArrowRight, Loader2, AlertCircle } from "lucide-react";
-import { Trip, Seat } from "../lib/types";
+import { EnrichedTrip, Seat } from "../lib/types";
 
-type TripDetails = Trip & { seats: Seat[] };
+type TripDetails = EnrichedTrip & { seats: Seat[] };
 
 export default function SeatSelectionPage() {
   const { tripId } = useParams<{ tripId: string }>();

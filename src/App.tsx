@@ -7,6 +7,7 @@ import { useWaslaContext } from "./lib/AppContext";
 import PassengerDashboard from "./pages/PassengerDashboard";
 import SeatSelectionPage from "./pages/SeatSelectionPage";
 import PaymentPage from "./pages/PaymentPage";
+import BookingConfirmationPage from "./pages/BookingConfirmationPage";
 import DriverDashboard from "./pages/DriverDashboard";
 import StationManagerDashboard from "./pages/StationManagerDashboard";
 

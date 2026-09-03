@@ -23,6 +23,9 @@ import {
   PaymentStatus,
   TripStatus,
   PaymentMethod,
+  Refund,
+  Driver,
+  Notification,
 } from "./types";
 import { produce } from "immer";
 import { addMinutes, isAfter } from "date-fns";
@@ -37,7 +40,7 @@ let db = {
   bookings: seedBookings,
   payments: seedPayments,
   routes: seedRoutes,
-  notifications: [],
+  notifications: [] as Notification[],
 };
 
 // --- API Abstraction ---
@@ -45,6 +48,7 @@ let db = {
 export const api = {
   // READ operations
   getUsers: async () => [...db.users],
+  getDrivers: async () => [...db.drivers],
   getVehicles: async () => [...db.vehicles],
   getTrips: async () => {
     // In a real app, this would be a JOIN query.
@@ -213,7 +217,7 @@ export const api = {
         draft.notifications.push({
             id: `notif-p-${Date.now()}`,
             userId: passenger.id,
-            message: `تم تأكيد حجزك ${booking.bookingCode} لرحلة ${trip.vehicleNumber}.`,
+            message: `تم تأكيد حجزك ${booking.bookingCode} لرحلة ${draft.vehicles.find(v => v.id === trip.vehicleId)?.vehicleNumber ?? "N/A"}.`,
             type: 'success',
             isRead: false,
             createdAt: new Date().toISOString(),
@@ -319,7 +323,7 @@ export const api = {
     });
     if (updatedVehicle) return { vehicle: updatedVehicle };
     return { error: "Vehicle or driver not found." };
-  }
+  },
 
   // Driver actions
   updatePassengerStatus: async (

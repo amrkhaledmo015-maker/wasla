@@ -1,6 +1,4 @@
 
-import { QRCode } from "react-qr-code";
-
 // 1. USER ROLES & CORE AUTH
 export type UserRole = "passenger" | "driver" | "station-manager";
 
@@ -76,6 +74,14 @@ export interface Trip {
   countdownStart: string; // ISO 8601 format
   status: TripStatus;
   passengers: PassengerTripInfo[];
+}
+
+export interface EnrichedTrip extends Trip {
+  vehicleNumber: string;
+  capacity: number;
+  origin: string;
+  destination: string;
+  driverName: string;
 }
 
 // 4. SEATING & BOOKING
@@ -175,7 +181,7 @@ export interface AppState {
   currentUser: User | null;
   currentRole: UserRole;
   vehicles: Vehicle[];
-  trips: Trip[];
+  trips: EnrichedTrip[];
   bookings: Booking[];
   users: User[];
   drivers: Driver[];
@@ -186,12 +192,14 @@ export interface AppState {
 }
 
 export interface AppContextType extends AppState {
+  isLoading: boolean;
+
   // Role switching
   setRole: (role: UserRole) => void;
 
   // Passenger actions
   selectSeat: (tripId: string, seatNumber: number) => void;
-  createBooking: (tripId: string, seatNumber: number) => Promise<Booking>;
+  createBooking: (tripId: string, seatNumber: number) => Promise<{ booking: Booking; payment: Payment }>;
   cancelBooking: (bookingId: string, reason: string) => void;
 
   // Driver actions
